@@ -1,0 +1,30 @@
+application:
+  kafka:
+    topic-name: demo-topic
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+    allow-circular-references: true
+  application:
+    name: demo-consumer
+  kafka:
+    bootstrap-servers: 127.0.0.1:9092,127.0.0.1:9093
+    listener:
+      ack-mode: record
+    producer:
+      client-id: ${spring.application.name}
+      #      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      #      value-serializer: edu.sandbox.springbootkafkabasics.consumer.serializer.DltMessageSerializer
+      retries: 3
+    consumer:
+      client-id: ${spring.application.name}
+      group-id: ${spring.application.name}
+      auto-offset-reset: earliest
+    #      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+    #      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+    properties:
+      spring.json.value.default.type: edu.sandbox.springbootkafkabasics.consumer.model.Message
+      spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+      spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+#      spring.json.trusted.packages: java.util,java.lang,edu.sandbox.springbootkafkabasics.*

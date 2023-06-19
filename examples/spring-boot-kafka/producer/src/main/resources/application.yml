@@ -1,0 +1,13 @@
+application:
+  kafka:
+    topic-name: demo-topic
+
+spring:
+  main:
+    allow-circular-references: true
+  kafka:
+    bootstrap-servers: 127.0.0.1:9092,127.0.0.1:9093
+    producer:
+      client-id: demo-producer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer

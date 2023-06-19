@@ -1,0 +1,41 @@
+plugins {
+    id "idea"
+    id "io.spring.dependency-management" version "1.0.11.RELEASE"
+}
+
+idea {
+    project {
+        languageLevel = 17
+    }
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+allprojects {
+    group "edu.sandbox"
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    apply plugin: "io.spring.dependency-management"
+    dependencyManagement {
+        dependencies {
+            imports {
+                mavenBom("org.springframework.boot:spring-boot-dependencies:${Versions.springBootDependencies}")
+            }
+
+            dependency("org.springframework.shell:spring-shell-starter:${Versions.springBootShell}")
+            dependency("org.projectlombok:lombok:${Versions.lombok}")
+        }
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            failOnVersionConflict()
+        }
+    }
+}

@@ -1,0 +1,4 @@
+rootProject.name = "sandbox-kafka"
+
+include "examples:spring-boot-kafka:producer"
+include "examples:spring-boot-kafka:consumer"
