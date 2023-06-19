@@ -12,8 +12,9 @@ public class KafkaMessageReceiver {
 
     @KafkaListener(
             id = "consumer-group-1",
+            clientIdPrefix = "consumer-1",
             topics = "${application.kafka.topic-name}",
-            containerFactory = "listenerContainerFactory",
+            containerFactory = "kafkaListenerContainerFactory",
             autoStartup = "false"
     )
     public void receive1(@Payload Message message) {
@@ -22,8 +23,9 @@ public class KafkaMessageReceiver {
 
     @KafkaListener(
             id = "consumer-group-2",
+            clientIdPrefix = "consumer-2",
             topics = "${application.kafka.topic-name}",
-            containerFactory = "listenerContainerFactory",
+            containerFactory = "kafkaListenerContainerFactory",
             autoStartup = "false"
     )
     public void receive2(@Payload Message message) {
