@@ -6,6 +6,8 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Slf4j
 @Service
 public class KafkaMessageReceiver {
@@ -17,8 +19,8 @@ public class KafkaMessageReceiver {
             containerFactory = "kafkaListenerContainerFactory",
             autoStartup = "false"
     )
-    public void receive1(@Payload Message message) {
-        receiveMessage(message, "consumer-group-1");
+    public void receive1(@Payload List<Message> messages) {
+        receiveMessage(messages, "consumer-group-1");
     }
 
     @KafkaListener(
@@ -28,15 +30,18 @@ public class KafkaMessageReceiver {
             containerFactory = "kafkaListenerContainerFactory",
             autoStartup = "false"
     )
-    public void receive2(@Payload Message message) {
-        receiveMessage(message, "consumer-group-2");
+    public void receive2(@Payload List<Message> messages) {
+        receiveMessage(messages, "consumer-group-2");
     }
 
-    public void receiveMessage(Message message, String consumerGroupMessage) {
-        var messageId = message.getId();
-        log.info(">>>> Received message with id = {} in group = {}", messageId, consumerGroupMessage);
-        if (messageId % 10 == 0) {
-            throw new RuntimeException(String.format("Received a message multiple of 10 with id %s", messageId));
+    public void receiveMessage(List<Message> messages, String consumerGroupMessage) {
+        log.info(">>>> Received messages with size = {} in group = {}", messages.size(), consumerGroupMessage);
+        for (Message message : messages) {
+            var messageId = message.getId();
+            log.info(">>>> message with id = {} in group = {}", messageId, consumerGroupMessage);
+            if (messageId % 10 == 0) {
+                throw new RuntimeException(String.format("Received a message multiple of 10 with id %s", messageId));
+            }
         }
     }
 }

@@ -47,6 +47,7 @@ public class KafkaConsumerConfig {
     @Bean
     public ProducerFactory<String, Message> producerFactory(KafkaProperties kafkaProperties, ObjectMapper mapper) {
         var properties = kafkaProperties.buildProducerProperties();
+
         // Way for setting properties programmatically, same specified in application.yaml
 //        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 //        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
@@ -59,11 +60,14 @@ public class KafkaConsumerConfig {
     @Bean
     public ConsumerFactory<String, Message> consumerFactory(KafkaProperties kafkaProperties, ObjectMapper mapper) {
         var properties = kafkaProperties.buildConsumerProperties();
+
         // Way for setting properties programmatically, same specified in application.yaml
-//        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
-//        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
+//        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringSerializer.class);
+//        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 //        properties.put(JsonDeserializer.TYPE_MAPPINGS, "edu.sandbox.springbootkafka.producer.model.Message:edu.sandbox.springbootkafka.consumer.model.Message");
 //        properties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 3);
+
+        // max time after which consumer will be considered as not available for kafka
         properties.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 3_000);
 
         var kafkaConsumerFactory = new DefaultKafkaConsumerFactory<String, Message>(properties);

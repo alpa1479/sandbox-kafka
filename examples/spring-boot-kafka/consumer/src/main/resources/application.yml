@@ -16,12 +16,13 @@ spring:
     consumer:
       max-poll-records: 3
       auto-offset-reset: earliest
-      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
 
     # https://docs.spring.io/spring-kafka/api/constant-values.html
     properties:
       spring.json.value.default.type: edu.sandbox.springbootkafka.consumer.model.Message
-      spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
-      spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+
+      # In case if type is not in trusted package we will receive an exception:
+      # Caused by: java.lang.IllegalArgumentException: The class 'edu.sandbox.springbootkafkabasics.producer.model.Message' is not in the trusted packages: [java.util, java.lang, edu.sandbox.springbootkafkabasics.consumer.model]. If you believe this class is safe to deserialize, please provide its name. If the serialization is only done by a trusted source, you can also enable trust all (*).
       spring.json.type.mapping: edu.sandbox.springbootkafka.producer.model.Message:edu.sandbox.springbootkafka.consumer.model.Message

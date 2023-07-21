@@ -1,51 +1,78 @@
 version: "3.9"
 
+# Commands:
 # docker compose up --build
+
+# Properties description:
+# https://kafka.apache.org/documentation/#configuration
+# https://github.com/robcowart/docker_compose_cookbook/blob/master/STACKS/confluent_kafka/docker-compose.yml
+# https://docs.confluent.io/platform/current/installation/docker/config-reference.html
 services:
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
+    hostname: zookeeper
     ports:
       - 2181:2181
+    environment:
+      # port where to listen for connections by kafka brokers
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+      # basic zookeeper time unit used to regulate heartbeats and timeouts. For example, the minimum session timeout will be two ticks.
+      ZOOKEEPER_TICK_TIME: 2000
 
   kafka_broker_1:
     image: confluentinc/cp-kafka:7.4.0
-    depends_on:
-      - zookeeper
+    hostname: broker1
     ports:
       - 9092:9092
-      - 29092:29092
-    hostname: broker1
+    depends_on:
+      - zookeeper
     environment:
+      # The broker id for this server which should be unique inside cluster.
       KAFKA_BROKER_ID: 1
+
+      # Zookeeper connection string, can have multiple values - hostname1:port1,hostname2:port2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker1:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+
+      # Describes listeners, as possible interfaces which clients may use for connection to broker. These values will be published to Zookeeper for clients to use.
+      # Here we have two listeners:
+      # 1. 'broker1' listener for docker internal network, e.g. it's used by kafka-ui container and for communication between brokers
+      # 2. 'localhost' listener for host network, which will be used outside of container, that's why we do port forwarding only for 9092
+      # Detailed explanation - https://www.confluent.io/blog/kafka-listeners-explained/
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker1:29092, PLAINTEXT_HOST://localhost:9092
+
+      # Defines key/value pairs for the security protocol to use per listener name
+      # List of supported protocols - https://kafka.apache.org/24/javadoc/org/apache/kafka/common/security/auth/SecurityProtocol.html
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+
+      # Name of the listener which will be used for internal communication between brokers
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+      # The replication factor for the offsets topic "__consumer_offsets" which is used by consumers.
+      # In case where kafka node goes down, consumers will be able to find information about offsets on other node.
+      # Otherwise, consumers will lose track of where they are and may start read messages from start or only from new message (depending on the configuration).
+      # Internal topic creation will fail until the cluster size meets this replication factor requirement.
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
 
   kafka_broker_2:
     image: confluentinc/cp-kafka:7.4.0
-    depends_on:
-      - zookeeper
+    hostname: broker2
     ports:
       - 9093:9093
-      - 29093:29093
-    hostname: broker2
+    depends_on:
+      - zookeeper
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9093,PLAINTEXT_INTERNAL://broker2:29093
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker2:29093, PLAINTEXT_HOST://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
 
+  # https://github.com/provectus/kafka-ui
   kafka-ui:
     image: provectuslabs/kafka-ui:2ac8646769d10e69d972928b943c5bcc708ddc61
-    container_name: kafka-ui
     ports:
       - 8090:8080
     restart: always
@@ -53,7 +80,3 @@ services:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=broker1:29092,broker2:29093
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
-    links:
-      - kafka_broker_1
-      - kafka_broker_2
-      - zookeeper
