@@ -26,9 +26,16 @@ services:
     hostname: broker1
     ports:
       - 9092:9092
+      - 9998:9998
     depends_on:
       - zookeeper
     environment:
+      KAFKA_JMX_PORT: 9998
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker1:29092
+      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper:2181
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      CONFLUENT_METRICS_ENABLE: 'false'
+
       # The broker id for this server which should be unique inside cluster.
       KAFKA_BROKER_ID: 1
 
@@ -60,9 +67,16 @@ services:
     hostname: broker2
     ports:
       - 9093:9093
+      - 9999:9999
     depends_on:
       - zookeeper
     environment:
+      KAFKA_JMX_PORT: 9999
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker2:29093
+      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper:2181
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      CONFLUENT_METRICS_ENABLE: 'false'
+
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker2:29093, PLAINTEXT_HOST://localhost:9093
@@ -80,3 +94,51 @@ services:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=broker1:29092,broker2:29093
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+
+  # Monitoring
+  prometheus:
+    image: prom/prometheus:v2.34.0
+    hostname: prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command: "--config.file=/etc/prometheus/prometheus.yml"
+
+  grafana:
+    image: grafana/grafana:8.4.5
+    hostname: grafana
+    ports:
+      - 3000:3000
+    environment:
+      GF_PATHS_DATA: /var/lib/grafana
+      GF_SECURITY_ADMIN_PASSWORD: kafka
+    volumes:
+      - ./etc/grafana/provisioning:/etc/grafana/provisioning
+      - ./var/lib/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+
+  jmx_exporter_kafka_broker_1:
+    image: sscaling/jmx-prometheus-exporter
+    hostname: exporter1
+    ports:
+      - 5556:5556
+    environment:
+      CONFIG_YML: /etc/jmx_exporter/config.yml
+    volumes:
+      - ./etc/jmx_exporter/config_kafka_broker_1.yml:/etc/jmx_exporter/config.yml
+    depends_on:
+      - kafka_broker_1
+
+  jmx_exporter_kafka_broker_2:
+    image: sscaling/jmx-prometheus-exporter
+    hostname: exporter2
+    ports:
+      - 5557:5556
+    environment:
+      CONFIG_YML: /etc/jmx_exporter/config.yml
+    volumes:
+      - ./etc/jmx_exporter/config_kafka_broker_2.yml:/etc/jmx_exporter/config.yml
+    depends_on:
+      - kafka_broker_2
