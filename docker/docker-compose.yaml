@@ -116,3 +116,15 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: test
+
+  kafka-lag-exporter:
+    image: seglo/kafka-lag-exporter:${KAFKA_LAG_EXPORTER_VERSION}
+    hostname: kafka-lag-exporter
+    ports:
+      - 8000:8000
+    depends_on:
+      - kafka_broker_1
+      - kafka_broker_2
+    volumes:
+      - ./opt/docker/conf/application.conf:/opt/docker/conf/application.conf
+      - ./opt/docker/conf/logback.xml:/opt/docker/conf/logback.xml
