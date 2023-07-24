@@ -102,16 +102,17 @@ services:
     volumes:
       - ./etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 
-#  grafana:
-#    image: grafana/grafana:8.4.5
-#    hostname: grafana
-#    ports:
-#      - 3000:3000
-#    environment:
-#      GF_PATHS_DATA: /var/lib/grafana
-#      GF_SECURITY_ADMIN_PASSWORD: kafka
-#    volumes:
-#      - ./etc/grafana/provisioning:/etc/grafana/provisioning
-#      - ./var/lib/grafana/dashboards:/var/lib/grafana/dashboards
-#    depends_on:
-#      - prometheus
+  grafana:
+    image: grafana/grafana:${GRAFANA_VERSION}
+    hostname: grafana
+    ports:
+      - 3000:3000
+    depends_on:
+      - prometheus
+    volumes:
+      - ./etc/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./etc/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./var/lib/grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: test
