@@ -58,6 +58,7 @@ services:
       # Internal topic creation will fail until the cluster size meets this replication factor requirement.
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
 
+      # Additional JVM options
       KAFKA_OPTS: "-javaagent:/etc/jmx_exporter/jmx_prometheus_javaagent-0.19.0.jar=9998:/etc/jmx_exporter/kafka-2_0_0.yml"
 
   kafka_broker_2:
