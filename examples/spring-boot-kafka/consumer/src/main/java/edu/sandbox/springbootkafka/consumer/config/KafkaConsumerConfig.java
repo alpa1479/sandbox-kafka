@@ -81,12 +81,16 @@ public class KafkaConsumerConfig {
     ) {
         var factory = new ConcurrentKafkaListenerContainerFactory<String, Message>();
         factory.setConsumerFactory(consumerFactory);
+        // to enable batch processing
         factory.setBatchListener(true);
+        // the number of consumers to create
         factory.setConcurrency(1);
         factory.setCommonErrorHandler(errorHandler);
 
         var containerProperties = factory.getContainerProperties();
+        // the interval to sleep between polling cycles
         containerProperties.setIdleBetweenPolls(1_000);
+        // max time to block in the consumer waiting for records
         containerProperties.setPollTimeout(1_000);
 
         var executor = new SimpleAsyncTaskExecutor("k-consumer-");

@@ -10,7 +10,7 @@ version: "3.9"
 services:
 
   zookeeper:
-    image: confluentinc/cp-zookeeper:7.4.0
+    image: confluentinc/cp-zookeeper:${ZOOKEEPER_VERSION}
     hostname: zookeeper
     ports:
       - 2181:2181
@@ -22,12 +22,15 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
 
   kafka_broker_1:
-    image: confluentinc/cp-kafka:7.4.0
+    image: confluentinc/cp-kafka:${KAFKA_BROKER_VERSION}
     hostname: broker1
     ports:
       - 9092:9092
     depends_on:
       - zookeeper
+    volumes:
+      - ./etc/jmx_exporter/jmx_prometheus_javaagent-0.19.0.jar:/etc/jmx_exporter/jmx_prometheus_javaagent-0.19.0.jar
+      - ./etc/jmx_exporter/kafka-2_0_0.yml:/etc/jmx_exporter/kafka-2_0_0.yml
     environment:
       # The broker id for this server which should be unique inside cluster.
       KAFKA_BROKER_ID: 1
@@ -55,13 +58,19 @@ services:
       # Internal topic creation will fail until the cluster size meets this replication factor requirement.
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
 
+      # Additional JVM options
+      KAFKA_OPTS: "-javaagent:/etc/jmx_exporter/jmx_prometheus_javaagent-0.19.0.jar=9998:/etc/jmx_exporter/kafka-2_0_0.yml"
+
   kafka_broker_2:
-    image: confluentinc/cp-kafka:7.4.0
+    image: confluentinc/cp-kafka:${KAFKA_BROKER_VERSION}
     hostname: broker2
     ports:
       - 9093:9093
     depends_on:
       - zookeeper
+    volumes:
+      - ./etc/jmx_exporter/jmx_prometheus_javaagent-0.19.0.jar:/etc/jmx_exporter/jmx_prometheus_javaagent-0.19.0.jar
+      - ./etc/jmx_exporter/kafka-2_0_0.yml:/etc/jmx_exporter/kafka-2_0_0.yml
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -69,14 +78,54 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_OPTS: "-javaagent:/etc/jmx_exporter/jmx_prometheus_javaagent-0.19.0.jar=9999:/etc/jmx_exporter/kafka-2_0_0.yml"
 
   # https://github.com/provectus/kafka-ui
   kafka-ui:
-    image: provectuslabs/kafka-ui:2ac8646769d10e69d972928b943c5bcc708ddc61
+    image: provectuslabs/kafka-ui:${KAFKA_UI_VERSION}
     ports:
       - 8090:8080
+    depends_on:
+      - kafka_broker_1
+      - kafka_broker_2
     restart: always
     environment:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=broker1:29092,broker2:29093
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+
+  # Monitoring
+  prometheus:
+    image: prom/prometheus:${PROMETHEUS_VERSION}
+    hostname: prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:${GRAFANA_VERSION}
+    hostname: grafana
+    ports:
+      - 3000:3000
+    depends_on:
+      - prometheus
+    volumes:
+      - ./etc/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./etc/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./var/lib/grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: test
+
+  kafka-lag-exporter:
+    image: seglo/kafka-lag-exporter:${KAFKA_LAG_EXPORTER_VERSION}
+    hostname: kafka-lag-exporter
+    ports:
+      - 8000:8000
+    depends_on:
+      - kafka_broker_1
+      - kafka_broker_2
+    volumes:
+      - ./opt/docker/conf/application.conf:/opt/docker/conf/application.conf
+      - ./opt/docker/conf/logback.xml:/opt/docker/conf/logback.xml
