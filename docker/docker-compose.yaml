@@ -82,7 +82,7 @@ services:
 
   # https://github.com/provectus/kafka-ui
   kafka-ui:
-    image: provectuslabs/kafka-ui:2ac8646769d10e69d972928b943c5bcc708ddc61
+    image: provectuslabs/kafka-ui:${KAFKA_UI_VERSION}
     ports:
       - 8090:8080
     depends_on:
