@@ -27,16 +27,16 @@ public class KafkaMessageListener {
         listen(messages, "consumer-group-1");
     }
 
-//    @KafkaListener(
-//            id = "consumer-group-2",
-//            clientIdPrefix = "consumer-2",
-//            topics = "${application.kafka.topic-name}",
-//            containerFactory = "kafkaListenerContainerFactory",
-//            autoStartup = "false"
-//    )
-//    public void listenSecondGroup(@Payload List<Message> messages) {
-//        listen(messages, "consumer-group-2");
-//    }
+    @KafkaListener(
+            id = "consumer-group-2",
+            clientIdPrefix = "consumer-2",
+            topics = "${application.kafka.topic-name}",
+            containerFactory = "kafkaListenerContainerFactory",
+            autoStartup = "false"
+    )
+    public void listenSecondGroup(@Payload List<Message> messages) {
+        listen(messages, "consumer-group-2");
+    }
 
     public void listen(List<Message> messages, String consumerGroupMessage) {
         log.info(">>>> Received messages with size = {} in group = {}", messages.size(), consumerGroupMessage);
