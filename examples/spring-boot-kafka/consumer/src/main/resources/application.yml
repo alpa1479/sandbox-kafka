@@ -1,6 +1,14 @@
 application:
   kafka:
     topic-name: demo-topic
+    dlt:
+      suffix: .failures
+      retention: 5m
+    back-off:
+      max-retries: 3
+      max-interval: 2s
+      initial-interval: 500ms
+      multiplier: 1.5
 
 spring:
   kafka:

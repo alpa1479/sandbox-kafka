@@ -8,4 +8,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class KafkaConsumerProperties {
 
     private final String topicName;
+    private final DltProperties dlt;
+    private final BackOffProperties backOff;
+
+    public String getDltSuffix() {
+        return dlt.getSuffix();
+    }
 }

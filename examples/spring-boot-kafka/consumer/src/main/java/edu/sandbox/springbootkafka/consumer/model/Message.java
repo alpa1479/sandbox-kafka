@@ -11,4 +11,6 @@ public class Message {
 
     private long id;
     private String text;
+    // if 'true', then RuntimeException will be thrown from KafkaMessageListener
+    private boolean shouldThrowException;
 }

@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.config.TopicConfig;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +22,7 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries;
 import org.springframework.kafka.support.JacksonUtils;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
@@ -30,9 +32,7 @@ import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 @RequiredArgsConstructor
 public class KafkaConsumerConfig {
 
-    private static final String DLT_TOPIC_SUFFIX = ".dlt";
-
-    private final KafkaConsumerProperties consumerProperties;
+    private final KafkaConsumerProperties properties;
 
     @Bean
     public ObjectMapper objectMapper() {
@@ -68,7 +68,7 @@ public class KafkaConsumerConfig {
 //        properties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 3);
 
         // max time after which consumer will be considered as not available for kafka
-        properties.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 3_000);
+        properties.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 30_000);
 
         var kafkaConsumerFactory = new DefaultKafkaConsumerFactory<String, Message>(properties);
         kafkaConsumerFactory.setValueDeserializer(new JsonDeserializer<>(mapper));
@@ -103,25 +103,46 @@ public class KafkaConsumerConfig {
 
     @Bean
     public DeadLetterPublishingRecoverer deadLetterPublishingRecoverer(KafkaTemplate<String, Message> kafkaTemplate) {
+        // If we don't have a lot of errors in this topic, then we can send errors always to 0 partition,
+        // instead of having the same amount of partitions as original topic has.
         return new DeadLetterPublishingRecoverer(
                 kafkaTemplate,
-                (consumerRecord, exception) -> new TopicPartition(consumerRecord.topic() + DLT_TOPIC_SUFFIX, consumerRecord.partition())
+                // by default without this argument it will send with ".DTL" suffix and to the same partition,
+                // see DEFAULT_DESTINATION_RESOLVER inside DeadLetterPublishingRecoverer
+                (consumerRecord, exception) -> new TopicPartition(consumerRecord.topic() + properties.getDltSuffix(), 0)
         );
     }
 
+    // todo(alpa1479): check RetryListener interface.
+    // todo(alpa1479): add logging of exceptions
     @Bean
     public DefaultErrorHandler errorHandler(DeadLetterPublishingRecoverer deadLetterPublishingRecoverer) {
-        var errorHandler = new DefaultErrorHandler(deadLetterPublishingRecoverer);
-        errorHandler.addNotRetryableExceptions(Exception.class);
+        var backOff = properties.getBackOff();
+
+        // ExponentialBackOffWithMaxRetries spreads out attempts over time, taking a little longer between each attempt
+        // Set a max for retries below max.poll.interval.ms; default: 5m, as otherwise we trigger a consumer rebalance
+        var exponentialBackOff = new ExponentialBackOffWithMaxRetries(backOff.getMaxRetries());
+        exponentialBackOff.setInitialInterval(backOff.getInitialInterval().toMillis());
+        exponentialBackOff.setMultiplier(backOff.getMultiplier());
+        exponentialBackOff.setMaxInterval(backOff.getMaxInterval().toMillis());
+
+        // By default, DefaultErrorHandler uses FixedBackOff with DEFAULT_MAX_FAILURES - 1 number of retries, where DEFAULT_MAX_FAILURES is equal to 10
+        var errorHandler = new DefaultErrorHandler(deadLetterPublishingRecoverer, exponentialBackOff);
+
+        // Option to disable mechanism of retries for specific exceptions (it checks hierarchy of specific exception)
+//        errorHandler.addNotRetryableExceptions(Exception.class);
+
         return errorHandler;
     }
 
     @Bean
     public NewTopic topic() {
         return TopicBuilder
-                .name(consumerProperties.getTopicName() + DLT_TOPIC_SUFFIX)
-                .partitions(4)
+                .name(properties.getTopicName() + properties.getDltSuffix())
+                .partitions(1)
                 .replicas(2)
+                // We can se longer retention for Dead Letter Topic, allowing for more time to troubleshoot
+                .config(TopicConfig.RETENTION_MS_CONFIG, String.valueOf(properties.getDlt().getRetention().toMillis()))
                 .build();
     }
 }

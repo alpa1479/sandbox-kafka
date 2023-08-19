@@ -36,6 +36,20 @@ allprojects {
     configurations.all {
         resolutionStrategy {
             failOnVersionConflict()
+
+            force 'org.scala-lang:scala-reflect:2.13.10'
+            force 'org.scala-lang:scala-library:2.13.10'
+        }
+    }
+}
+
+task printManagedVersions {
+    group "custom help"
+    description "prints available dependencies"
+
+    doLast {
+        dependencyManagement.managedVersions.each {
+            println it
         }
     }
 }

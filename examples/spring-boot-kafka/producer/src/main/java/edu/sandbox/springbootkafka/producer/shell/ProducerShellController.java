@@ -28,17 +28,19 @@ public class ProducerShellController {
     }
 
     @ShellMethod(value = "Send specified amount of messages to kafka", key = {"send"})
-    public void sendMessages(@ShellOption(value = "-n", defaultValue = "1") long amount) {
-        MessageGenerator.generate(amount).forEach(sender::send);
+    public void sendMessages(@ShellOption(value = "-n", defaultValue = "1") long amount,
+                             @ShellOption(value = "-e", defaultValue = "false") boolean messageShouldThrowException) {
+        MessageGenerator.generate(amount, messageShouldThrowException).forEach(sender::send);
     }
 
     @ShellMethod(value = "Send message using scheduled executor with specified period (in seconds)", key = {"start"})
-    public void startScheduledExecutor(@ShellOption(value = "-p", defaultValue = "1") long period) {
+    public void startScheduledExecutor(@ShellOption(value = "-p", defaultValue = "1") long period,
+                                       @ShellOption(value = "-e", defaultValue = "false") boolean messageShouldThrowException) {
         if (executor.isTerminated()) {
             executor = Executors.newScheduledThreadPool(1);
         }
         var idGenerator = new AtomicLong(0);
-        executor.scheduleAtFixedRate(() -> sender.send(MessageGenerator.generateWithId(idGenerator.incrementAndGet())),
+        executor.scheduleAtFixedRate(() -> sender.send(MessageGenerator.generateWithId(idGenerator.incrementAndGet(), messageShouldThrowException)),
                 0, period, TimeUnit.SECONDS);
     }
 
