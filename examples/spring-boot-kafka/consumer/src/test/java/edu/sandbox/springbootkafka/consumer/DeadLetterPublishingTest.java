@@ -41,7 +41,7 @@ public class DeadLetterPublishingTest {
     private static final Logger log = LoggerFactory.getLogger(DeadLetterPublishingTest.class);
 
     @Container // https://www.testcontainers.org/modules/kafka/
-    static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.4.0"));
+    static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.5.0"));
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
