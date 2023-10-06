@@ -1,7 +1,8 @@
 version: "3.9"
 
-# Commands:
+# Utility commands:
 # docker compose up --build
+# cd /var/lib/kafka/data - kafka log directory
 
 # Properties description:
 # https://kafka.apache.org/documentation/#configuration
