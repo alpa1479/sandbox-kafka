@@ -80,6 +80,20 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
       KAFKA_OPTS: "-javaagent:/etc/jmx_exporter/jmx_prometheus_javaagent-0.19.0.jar=9999:/etc/jmx_exporter/kafka-2_0_0.yml"
 
+  kafka_brokers_init:
+    image: confluentinc/cp-kafka:${KAFKA_BROKER_VERSION}
+    init: true
+    depends_on:
+      kafka_broker_1:
+        condition: service_started
+      kafka_broker_2:
+        condition: service_started
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: |
+      "
+      kafka-topics --bootstrap-server broker1:29092 --create --if-not-exists --topic demo-topic --replication-factor 2 --partitions 4
+      "
+
   # https://github.com/provectus/kafka-ui
   kafka-ui:
     image: provectuslabs/kafka-ui:${KAFKA_UI_VERSION}

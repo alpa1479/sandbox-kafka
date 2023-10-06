@@ -1,11 +1,9 @@
-application:
-  kafka:
-    topic-name: demo-topic
-
 spring:
   kafka:
     client-id: demo-producer
     bootstrap-servers: 127.0.0.1:9092,127.0.0.1:9093
     producer:
+      topic-name: demo-topic
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  jackson:
+    default-property-inclusion: non_null

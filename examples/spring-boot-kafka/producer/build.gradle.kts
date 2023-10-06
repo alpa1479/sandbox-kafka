@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-json")
     implementation("org.springframework.shell:spring-shell-starter")
     implementation("org.springframework.kafka:spring-kafka")
 
