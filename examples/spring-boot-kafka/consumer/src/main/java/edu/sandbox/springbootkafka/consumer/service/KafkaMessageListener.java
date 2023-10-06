@@ -16,9 +16,9 @@ public class KafkaMessageListener {
 
     // todo(alpa1479): add payload validation
     @KafkaListener(
-            id = "consumer-group-1",
+            topics = "${spring.kafka.consumer.topic-name}",
+            groupId = "consumer-group-1",
             clientIdPrefix = "consumer-1",
-            topics = "${application.kafka.topic-name}",
             containerFactory = "kafkaListenerContainerFactory",
             autoStartup = "false"
     )
@@ -28,9 +28,9 @@ public class KafkaMessageListener {
     }
 
     @KafkaListener(
-            id = "consumer-group-2",
+            topics = "${spring.kafka.consumer.topic-name}",
+            groupId = "consumer-group-2",
             clientIdPrefix = "consumer-2",
-            topics = "${application.kafka.topic-name}",
             containerFactory = "kafkaListenerContainerFactory",
             autoStartup = "false"
     )
@@ -41,9 +41,9 @@ public class KafkaMessageListener {
     public void listen(List<Message> messages, String consumerGroupMessage) {
         log.info(">>>> Received messages with size = {} in group = {}", messages.size(), consumerGroupMessage);
         for (Message message : messages) {
-            var messageId = message.getId();
+            var messageId = message.id();
             log.info(">>>> message with id = {} in group = {}", messageId, consumerGroupMessage);
-            if (message.isShouldThrowException()) {
+            if (message.shouldThrowException()) {
                 throw new RuntimeException(String.format("Received a message with id %s that should trigger exception", messageId));
             }
         }

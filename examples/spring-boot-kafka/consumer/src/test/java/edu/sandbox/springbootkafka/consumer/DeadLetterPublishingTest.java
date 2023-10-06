@@ -1,6 +1,6 @@
 package edu.sandbox.springbootkafka.consumer;
 
-import edu.sandbox.springbootkafka.consumer.config.KafkaConsumerProperties;
+import edu.sandbox.springbootkafka.consumer.config.properties.KafkaConsumerProperties;
 import edu.sandbox.springbootkafka.consumer.model.Message;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -31,7 +31,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
 
 @SpringBootTest
 @Testcontainers
@@ -94,7 +93,7 @@ public class DeadLetterPublishingTest {
 
         assertThrows(
                 IllegalStateException.class,
-                () -> KafkaTestUtils.getSingleRecord(consumer, properties.getTopicName() + properties.getDltSuffix(), Duration.ofSeconds(5)),
+                () -> KafkaTestUtils.getSingleRecord(consumer, properties.topicName() + properties.dlt().suffix(), Duration.ofSeconds(5)),
                 "No records found for topic"
         );
     }
@@ -104,7 +103,7 @@ public class DeadLetterPublishingTest {
     void shouldProduceMessageToDlt() {
         send(new Message(1, "text", true));
 
-        var record = KafkaTestUtils.getSingleRecord(consumer, properties.getTopicName() + properties.getDltSuffix(), Duration.ofSeconds(10));
+        var record = KafkaTestUtils.getSingleRecord(consumer, properties.topicName() + properties.dlt().suffix(), Duration.ofSeconds(10));
 
         var headers = record.headers();
         assertThat(headers).map(Header::key).containsAll(List.of(
@@ -128,13 +127,13 @@ public class DeadLetterPublishingTest {
     }
 
     private void send(Message message) {
-        template.send(properties.getTopicName(), message)
+        template.send(properties.topicName(), message)
                 .whenComplete((result, exception) -> {
                     if (exception == null) {
                         var offset = result.getRecordMetadata().offset();
-                        log.info(">>>> Successfully sent message with id = {}, offset = {}", message.getId(), offset);
+                        log.info(">>>> Successfully sent message with id = {}, offset = {}", message.id(), offset);
                     } else {
-                        log.error(">>>> Error during attempt to send message with id = {}", message.getId(), exception);
+                        log.error(">>>> Error during attempt to send message with id = {}", message.id(), exception);
                     }
                 });
     }

@@ -21,7 +21,7 @@ public class KafkaProducerConfig {
         // Way for setting properties programmatically, same specified in application.yaml
 //        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 
-        // without this statement spring will use default object mapper which not includes properties in application.yml
+        // Without this statement spring will use default object mapper which not includes properties in application.yml
         kafkaProducerFactory.setValueSerializer(new JsonSerializer<>(mapper));
         return kafkaProducerFactory;
     }

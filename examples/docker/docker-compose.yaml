@@ -92,6 +92,9 @@ services:
     command: |
       "
       kafka-topics --bootstrap-server broker1:29092 --create --if-not-exists --topic demo-topic --replication-factor 2 --partitions 4
+      
+      # For demo purposes retention time is set to 5 minutes, but we can set longer retention for Dead Letter Topic, allowing for more time to troubleshoot
+      kafka-topics --bootstrap-server broker1:29092 --create --if-not-exists --topic demo-topic.failures --replication-factor 2 --partitions 1 --config retention.ms=300000
       "
 
   # https://github.com/provectus/kafka-ui

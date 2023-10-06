@@ -2,8 +2,10 @@ spring:
   kafka:
     client-id: demo-producer
     bootstrap-servers: 127.0.0.1:9092,127.0.0.1:9093
+
     producer:
       topic-name: demo-topic
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
+
   jackson:
     default-property-inclusion: non_null

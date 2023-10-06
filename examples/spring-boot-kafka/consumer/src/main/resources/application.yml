@@ -1,31 +1,43 @@
-application:
-  kafka:
-    topic-name: demo-topic
-    dlt:
-      suffix: .failures
-      retention: 5m
-    back-off:
-      max-retries: 3
-      max-interval: 2s
-      initial-interval: 500ms
-      multiplier: 1.5
-
 spring:
   kafka:
     client-id: demo-consumer
     bootstrap-servers: 127.0.0.1:9092,127.0.0.1:9093
+
     listener:
-      ack-mode: record
+      # Invokes the endpoint with a batch of ConsumerRecords.
+      type: batch
+      # Commit the offsets of all records returned by the previous poll after they all have been processed by the listener.
+      ack-mode: batch
+      # The number of consumers to create by the listener
+      concurrency: 1
+      # Sleep interval between Consumer.poll(Duration) calls
+      idle-between-polls: 1000
+      # Max time to block in the consumer waiting for records
+      poll-timeout: 1000
+      # Whether to log the container configuration during initialization (INFO level)
+      log-container-config: true
+
     producer:
-      client-id: dlt-producer
+      client-id: dlt-demo-producer
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      # When greater than zero, enables retrying of failed sends.
       retries: 3
+
     consumer:
+      topic-name: demo-topic
       max-poll-records: 3
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      back-off:
+        max-retries: 3
+        max-interval: 2s
+        initial-interval: 500ms
+        multiplier: 1.5
+      dlt:
+        suffix: .failures
+      properties:
+        # Max time after which consumer will be considered as not available for kafka
+        max.poll.interval.ms: 30000
 
     # https://docs.spring.io/spring-kafka/api/constant-values.html
     properties:
@@ -34,3 +46,6 @@ spring:
       # In case if type is not in trusted package we will receive an exception:
       # Caused by: java.lang.IllegalArgumentException: The class 'edu.sandbox.springbootkafkabasics.producer.model.Message' is not in the trusted packages: [java.util, java.lang, edu.sandbox.springbootkafkabasics.consumer.model]. If you believe this class is safe to deserialize, please provide its name. If the serialization is only done by a trusted source, you can also enable trust all (*).
       spring.json.type.mapping: edu.sandbox.springbootkafka.producer.model.Message:edu.sandbox.springbootkafka.consumer.model.Message
+
+  jackson:
+    default-property-inclusion: non_null
