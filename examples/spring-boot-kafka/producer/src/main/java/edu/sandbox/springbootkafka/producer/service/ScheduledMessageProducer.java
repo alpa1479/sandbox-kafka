@@ -14,12 +14,18 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ScheduledMessageProducer {
 
     private final KafkaMessageSender sender;
+    private final MessageGenerator generator;
     private ScheduledExecutorService executor;
 
     public void start(long period, boolean messageShouldThrowException) {
         initializeExecutorIfRequired();
         var idGenerator = new AtomicLong(0);
-        schedule(() -> sender.send(MessageGenerator.generateWithId(idGenerator.incrementAndGet(), messageShouldThrowException)), period);
+        schedule(() -> sender.send(generator.generateWithId(idGenerator.incrementAndGet(), messageShouldThrowException)), period);
+    }
+
+    public void start(long period) {
+        initializeExecutorIfRequired();
+        schedule(() -> sender.send(generator.generate()), period);
     }
 
     public void stop() throws InterruptedException {

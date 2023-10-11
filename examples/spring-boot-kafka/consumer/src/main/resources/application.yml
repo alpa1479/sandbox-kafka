@@ -24,10 +24,12 @@ spring:
       retries: 3
 
     consumer:
-      topic-name: demo-topic
       max-poll-records: 3
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      topics:
+        static-message: static-message-topic
+        dynamic-message: dynamic-message-topic
       back-off:
         max-retries: 3
         max-interval: 2s
@@ -41,11 +43,11 @@ spring:
 
     # https://docs.spring.io/spring-kafka/api/constant-values.html
     properties:
-      spring.json.value.default.type: edu.sandbox.springbootkafka.consumer.model.Message
+      spring.json.value.default.type: edu.sandbox.springbootkafka.consumer.model.StaticMessage
 
       # In case if type is not in trusted package we will receive an exception:
-      # Caused by: java.lang.IllegalArgumentException: The class 'edu.sandbox.springbootkafkabasics.producer.model.Message' is not in the trusted packages: [java.util, java.lang, edu.sandbox.springbootkafkabasics.consumer.model]. If you believe this class is safe to deserialize, please provide its name. If the serialization is only done by a trusted source, you can also enable trust all (*).
-      spring.json.type.mapping: edu.sandbox.springbootkafka.producer.model.Message:edu.sandbox.springbootkafka.consumer.model.Message
+      # Caused by: java.lang.IllegalArgumentException: The class 'edu.sandbox.springbootkafkabasics.producer.model.StaticMessage' is not in the trusted packages: [java.util, java.lang, edu.sandbox.springbootkafkabasics.consumer.model]. If you believe this class is safe to deserialize, please provide its name. If the serialization is only done by a trusted source, you can also enable trust all (*).
+      spring.json.type.mapping: edu.sandbox.springbootkafka.producer.model.StaticMessage:edu.sandbox.springbootkafka.consumer.model.StaticMessage
 
   jackson:
     default-property-inclusion: non_null

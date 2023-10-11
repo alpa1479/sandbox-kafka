@@ -2,7 +2,6 @@ package edu.sandbox.springbootkafka.consumer.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.sandbox.springbootkafka.consumer.config.properties.KafkaConsumerProperties;
-import edu.sandbox.springbootkafka.consumer.model.Message;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerContainerFactoryConfigurer;
@@ -34,15 +33,15 @@ public class KafkaConsumerConfig {
     private final KafkaConsumerProperties properties;
 
     @Bean
-    public ProducerFactory<String, Message> producerFactory(KafkaProperties kafkaProperties, ObjectMapper mapper) {
+    public ProducerFactory<Object, Object> producerFactory(KafkaProperties kafkaProperties, ObjectMapper mapper) {
         var properties = kafkaProperties.buildProducerProperties();
-        var kafkaProducerFactory = new DefaultKafkaProducerFactory<String, Message>(properties);
+        var kafkaProducerFactory = new DefaultKafkaProducerFactory<>(properties);
         kafkaProducerFactory.setValueSerializer(new JsonSerializer<>(mapper));
         return kafkaProducerFactory;
     }
 
     @Bean
-    public KafkaTemplate<String, Message> kafkaTemplate(ProducerFactory<String, Message> producerFactory) {
+    public KafkaTemplate<Object, Object> kafkaTemplate(ProducerFactory<Object, Object> producerFactory) {
         return new KafkaTemplate<>(producerFactory);
     }
 
@@ -52,7 +51,7 @@ public class KafkaConsumerConfig {
         var kafkaConsumerFactory = new DefaultKafkaConsumerFactory<>(properties);
 
         // Way for setting properties programmatically, same specified in application.yaml
-//        properties.put(JsonDeserializer.TYPE_MAPPINGS, "edu.sandbox.springbootkafka.producer.model.Message:edu.sandbox.springbootkafka.consumer.model.Message");
+//        properties.put(JsonDeserializer.TYPE_MAPPINGS, "edu.sandbox.springbootkafka.producer.model.StaticMessage:edu.sandbox.springbootkafka.consumer.model.StaticMessage");
 //        properties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 3);
 
         // Without this statement spring will use default object mapper which not includes properties in application.yml
@@ -80,7 +79,7 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public DeadLetterPublishingRecoverer deadLetterPublishingRecoverer(KafkaTemplate<String, Message> kafkaTemplate) {
+    public DeadLetterPublishingRecoverer deadLetterPublishingRecoverer(KafkaTemplate<Object, Object> kafkaTemplate) {
         // If we don't have a lot of errors in this topic, then we can send errors always to 0 partition,
         // instead of having the same amount of partitions as original topic has.
         var recoverer = new DeadLetterPublishingRecoverer(

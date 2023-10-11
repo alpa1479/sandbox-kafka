@@ -4,8 +4,10 @@ spring:
     bootstrap-servers: 127.0.0.1:9092,127.0.0.1:9093
 
     producer:
-      topic-name: demo-topic
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      topics:
+        static-message: static-message-topic
+        dynamic-message: dynamic-message-topic
 
   jackson:
     default-property-inclusion: non_null

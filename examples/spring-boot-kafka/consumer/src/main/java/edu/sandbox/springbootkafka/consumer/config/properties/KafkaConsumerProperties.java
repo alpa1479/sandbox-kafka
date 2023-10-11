@@ -5,7 +5,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.time.Duration;
 
 @ConfigurationProperties(prefix = "spring.kafka.consumer")
-public record KafkaConsumerProperties(String topicName, Dlt dlt, BackOff backOff) {
+public record KafkaConsumerProperties(Topics topics, Dlt dlt, BackOff backOff) {
+
+    public record Topics(String staticMessage, String dynamicMessage) {
+    }
 
     public record Dlt(String suffix) {
     }

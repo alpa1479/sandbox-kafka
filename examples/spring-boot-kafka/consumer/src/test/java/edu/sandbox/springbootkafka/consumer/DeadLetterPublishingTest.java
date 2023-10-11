@@ -1,7 +1,7 @@
 package edu.sandbox.springbootkafka.consumer;
 
 import edu.sandbox.springbootkafka.consumer.config.properties.KafkaConsumerProperties;
-import edu.sandbox.springbootkafka.consumer.model.Message;
+import edu.sandbox.springbootkafka.consumer.model.StaticMessage;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.header.Header;
@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -56,7 +56,7 @@ public class DeadLetterPublishingTest {
         var consumerProps = KafkaTestUtils.consumerProps(kafka.getBootstrapServers(), "consumer-group-1", "true");
         consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         consumer = new KafkaConsumer<>(consumerProps);
-        consumer.subscribe(List.of("demo-topic.failures"));
+        consumer.subscribe(List.of("static-message-topic.failures"));
     }
 
     @AfterAll
@@ -69,7 +69,7 @@ public class DeadLetterPublishingTest {
     private KafkaConsumerProperties properties;
 
     @Autowired
-    private KafkaTemplate<String, Message> template;
+    private KafkaOperations<Object, Object> operations;
 
     @Autowired
     private KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
@@ -89,11 +89,11 @@ public class DeadLetterPublishingTest {
     @Test
     @DisplayName("should not produce message to dlt after successful message was sent")
     void shouldNotProduceMessageToDlt() {
-        send(new Message(1, "text", false));
+        send(new StaticMessage(1, "text", false));
 
         assertThrows(
                 IllegalStateException.class,
-                () -> KafkaTestUtils.getSingleRecord(consumer, properties.topicName() + properties.dlt().suffix(), Duration.ofSeconds(5)),
+                () -> KafkaTestUtils.getSingleRecord(consumer, properties.topics().staticMessage() + properties.dlt().suffix(), Duration.ofSeconds(5)),
                 "No records found for topic"
         );
     }
@@ -101,9 +101,9 @@ public class DeadLetterPublishingTest {
     @Test
     @DisplayName("should produce message to dlt after receiving message that trigger exception")
     void shouldProduceMessageToDlt() {
-        send(new Message(1, "text", true));
+        send(new StaticMessage(1, "text", true));
 
-        var record = KafkaTestUtils.getSingleRecord(consumer, properties.topicName() + properties.dlt().suffix(), Duration.ofSeconds(10));
+        var record = KafkaTestUtils.getSingleRecord(consumer, properties.topics().staticMessage() + properties.dlt().suffix(), Duration.ofSeconds(10));
 
         var headers = record.headers();
         assertThat(headers).map(Header::key).containsAll(List.of(
@@ -126,8 +126,8 @@ public class DeadLetterPublishingTest {
                 .contains("Received a message with id 1 that should trigger exception");
     }
 
-    private void send(Message message) {
-        template.send(properties.topicName(), message)
+    private void send(StaticMessage message) {
+        operations.send(properties.topics().staticMessage(), message)
                 .whenComplete((result, exception) -> {
                     if (exception == null) {
                         var offset = result.getRecordMetadata().offset();

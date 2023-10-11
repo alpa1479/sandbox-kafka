@@ -1,7 +1,6 @@
 package edu.sandbox.springbootkafka.producer.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.sandbox.springbootkafka.producer.model.Message;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,9 +13,9 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 public class KafkaProducerConfig {
 
     @Bean
-    public ProducerFactory<String, Message> producerFactory(KafkaProperties kafkaProperties, ObjectMapper mapper) {
+    public ProducerFactory<Object, Object> producerFactory(KafkaProperties kafkaProperties, ObjectMapper mapper) {
         var properties = kafkaProperties.buildProducerProperties();
-        var kafkaProducerFactory = new DefaultKafkaProducerFactory<String, Message>(properties);
+        var kafkaProducerFactory = new DefaultKafkaProducerFactory<>(properties);
 
         // Way for setting properties programmatically, same specified in application.yaml
 //        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -27,7 +26,7 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, Message> kafkaTemplate(ProducerFactory<String, Message> producerFactory) {
+    public KafkaTemplate<Object, Object> kafkaTemplate(ProducerFactory<Object, Object> producerFactory) {
         return new KafkaTemplate<>(producerFactory);
     }
 }

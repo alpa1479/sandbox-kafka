@@ -11,7 +11,7 @@ import org.springframework.shell.standard.ShellOption;
 @Slf4j
 @ShellComponent
 @RequiredArgsConstructor
-public class ProducerShellController {
+public class StaticMessageProducerShellController {
 
     private final SingleMessageProducer singleMessageProducer;
     private final ScheduledMessageProducer scheduledMessageProducer;
