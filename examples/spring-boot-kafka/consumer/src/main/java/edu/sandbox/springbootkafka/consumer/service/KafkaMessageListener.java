@@ -23,8 +23,8 @@ public class KafkaMessageListener {
             autoStartup = "false"
     )
     // Headers added only for debug purposes
-    public void listenFirstGroup(@Headers Map<String, Object> headers, @Payload List<Message> messages) {
-        listen(messages, "consumer-group-1");
+    public void onMessage(@Headers Map<String, Object> headers, @Payload List<Message> messages) {
+        processBatch(messages);
     }
 
     @KafkaListener(
@@ -34,15 +34,13 @@ public class KafkaMessageListener {
             containerFactory = "kafkaListenerContainerFactory",
             autoStartup = "false"
     )
-    public void listenSecondGroup(@Payload List<Message> messages) {
-        listen(messages, "consumer-group-2");
+    public void onMessage(@Payload List<Message> messages) {
+        processBatch(messages);
     }
 
-    public void listen(List<Message> messages, String consumerGroupMessage) {
-        log.info(">>>> Received messages with size = {} in group = {}", messages.size(), consumerGroupMessage);
+    public void processBatch(List<Message> messages) {
         for (Message message : messages) {
             var messageId = message.id();
-            log.info(">>>> message with id = {} in group = {}", messageId, consumerGroupMessage);
             if (message.shouldThrowException()) {
                 throw new RuntimeException(String.format("Received a message with id %s that should trigger exception", messageId));
             }

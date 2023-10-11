@@ -22,6 +22,7 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries;
+import org.springframework.kafka.support.LogIfLevelEnabled;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
@@ -68,11 +69,13 @@ public class KafkaConsumerConfig {
 
         // ConcurrentMessageListenerContainer customization
         var containerProperties = factory.getContainerProperties();
+
         var executor = new SimpleAsyncTaskExecutor("k-consumer-");
         executor.setConcurrencyLimit(10);
-
         var listenerTaskExecutor = new ConcurrentTaskExecutor(executor);
         containerProperties.setListenerTaskExecutor(listenerTaskExecutor);
+
+        containerProperties.setCommitLogLevel(LogIfLevelEnabled.Level.INFO);
         return factory;
     }
 
@@ -80,12 +83,15 @@ public class KafkaConsumerConfig {
     public DeadLetterPublishingRecoverer deadLetterPublishingRecoverer(KafkaTemplate<String, Message> kafkaTemplate) {
         // If we don't have a lot of errors in this topic, then we can send errors always to 0 partition,
         // instead of having the same amount of partitions as original topic has.
-        return new DeadLetterPublishingRecoverer(
+        var recoverer = new DeadLetterPublishingRecoverer(
                 kafkaTemplate,
                 // by default without this argument it will send with ".DLT" suffix and to the same partition,
                 // see DEFAULT_DESTINATION_RESOLVER inside DeadLetterPublishingRecoverer
                 (consumerRecord, exception) -> new TopicPartition(consumerRecord.topic() + properties.dlt().suffix(), 0)
         );
+        // If recoverer will not be able to send message to DLT topic it will stop instead of infinite retries
+        recoverer.setFailIfSendResultIsError(false);
+        return recoverer;
     }
 
     @Bean

@@ -4,7 +4,7 @@ import edu.sandbox.springbootkafka.producer.config.properties.KafkaProducerPrope
 import edu.sandbox.springbootkafka.producer.model.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -13,10 +13,10 @@ import org.springframework.stereotype.Service;
 public class KafkaMessageSender {
 
     private final KafkaProducerProperties properties;
-    private final KafkaTemplate<String, Message> template;
+    private final KafkaOperations<String, Message> operations;
 
     public void send(Message message) {
-        template.send(properties.topicName(), message)
+        operations.send(properties.topicName(), message)
                 .whenComplete((result, exception) -> {
                     if (exception == null) {
                         var offset = result.getRecordMetadata().offset();
