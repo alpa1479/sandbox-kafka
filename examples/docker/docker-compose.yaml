@@ -95,10 +95,14 @@ services:
       # Apache Kafka replicates the event log for each topic’s partitions across a configurable number of servers. This replication factor is configured at the topic level, and the unit of replication is the topic partition. 
       # All topics must have a replication factor configuration value. The replication factor includes the total number of replicas including the leader, which means that topics with a replication factor of one (1) are topics that are not replicated.
       # To guarantee high availability, the minimum replication factor must be 3. Setting a replication factor of 3 and min.insync.replicas of 2 guarantees that the clients can write data and that acknowledged writes guarantee persistence.
-      kafka-topics --bootstrap-server broker1:29092 --create --if-not-exists --topic demo-topic --replication-factor 2 --partitions 4
+      kafka-topics --bootstrap-server broker1:29092 --create --if-not-exists --topic static.message.topic --replication-factor 2 --partitions 4
       
       # For demo purposes retention time is set to 5 minutes, but we can set longer retention for Dead Letter Topic, allowing for more time to troubleshoot
-      kafka-topics --bootstrap-server broker1:29092 --create --if-not-exists --topic demo-topic.failures --replication-factor 2 --partitions 1 --config retention.ms=300000
+      kafka-topics --bootstrap-server broker1:29092 --create --if-not-exists --topic static.message.topic.failures --replication-factor 2 --partitions 1 --config retention.ms=300000
+      
+      kafka-topics --bootstrap-server broker1:29092 --create --if-not-exists --topic dynamic.message.topic --replication-factor 2 --partitions 4
+      
+      kafka-topics --bootstrap-server broker1:29092 --create --if-not-exists --topic dynamic.message.topic.failures --replication-factor 2 --partitions 1
       "
 
   # https://github.com/provectus/kafka-ui

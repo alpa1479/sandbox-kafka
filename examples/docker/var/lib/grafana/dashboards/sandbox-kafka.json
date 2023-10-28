@@ -105,7 +105,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "builder",
-          "expr": "kafka_server_brokertopicmetrics_messagesin_total{topic=\"demo-topic\"}",
+          "expr": "kafka_server_brokertopicmetrics_messagesin_total{topic=\"static.message.topic\"}",
           "instant": false,
           "range": true,
           "refId": "A"
@@ -217,7 +217,7 @@
           },
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "kafka_server_brokertopicmetrics_bytesin_total{topic=\"demo-topic\"}",
+          "expr": "kafka_server_brokertopicmetrics_bytesin_total{topic=\"static.message.topic\"}",
           "instant": false,
           "interval": "",
           "range": true,
@@ -313,7 +313,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "builder",
-          "expr": "kafka_server_brokertopicmetrics_bytesout_total{topic=\"demo-topic\"}",
+          "expr": "kafka_server_brokertopicmetrics_bytesout_total{topic=\"static.message.topic\"}",
           "instant": false,
           "range": true,
           "refId": "A"

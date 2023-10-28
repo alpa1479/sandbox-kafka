@@ -94,7 +94,7 @@ ssl.truststore.type = JKS
 value.deserializer = class org.springframework.kafka.support.serializer.JsonDeserializer
 
 containerProperties=ContainerProperties [
- topics=[demo-topic]
+ topics=[static.message.topic]
  pollTimeout=1000
  groupId=consumer-group-2
  clientId=consumer-2

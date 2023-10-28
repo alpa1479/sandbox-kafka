@@ -6,8 +6,8 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       topics:
-        static-message: static-message-topic
-        dynamic-message: dynamic-message-topic
+        static-message: static.message.topic
+        dynamic-message: dynamic.message.topic
 
   jackson:
     default-property-inclusion: non_null
