@@ -3,7 +3,9 @@ package edu.sandbox.kafka.springbootkafka.consumer.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.sandbox.kafka.springbootkafka.consumer.config.properties.KafkaConsumerProperties;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.config.TopicConfig;
 import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerContainerFactoryConfigurer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
+import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -111,5 +114,17 @@ public class KafkaConsumerConfig {
 //        errorHandler.addNotRetryableExceptions(Exception.class);
 
         return errorHandler;
+    }
+
+    // Example how to create topic from application level
+    // If replicas is not specified, default.replication.factor will be used
+    @Bean
+    public NewTopic exampleTopic() {
+        return TopicBuilder
+                .name("example.topic")
+                .partitions(1)
+                .replicas(1)
+                .config(TopicConfig.RETENTION_MS_CONFIG, "120000")
+                .build();
     }
 }

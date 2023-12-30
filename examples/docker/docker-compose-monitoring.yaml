@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+
+  prometheus:
+    image: prom/prometheus:${PROMETHEUS_VERSION}
+    hostname: prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:${GRAFANA_VERSION}
+    hostname: grafana
+    ports:
+      - 3000:3000
+    depends_on:
+      - prometheus
+    volumes:
+      - ./etc/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./etc/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./var/lib/grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: test
+
+  kafka-lag-exporter:
+    image: seglo/kafka-lag-exporter:${KAFKA_LAG_EXPORTER_VERSION}
+    hostname: kafka-lag-exporter
+    ports:
+      - 8000:8000
+    depends_on:
+      - kafka_broker_1
+      - kafka_broker_2
+    volumes:
+      - ./opt/docker/conf/application.conf:/opt/docker/conf/application.conf
+      - ./opt/docker/conf/logback.xml:/opt/docker/conf/logback.xml

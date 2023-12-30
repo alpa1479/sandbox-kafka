@@ -116,8 +116,8 @@ public class DeadLetterPublishingTest {
                 "kafka_dlt-original-offset",
                 "kafka_dlt-original-timestamp",
                 "kafka_dlt-original-timestamp-type",
-                "kafka_dlt-original-consumer-group")
-        );
+                "kafka_dlt-original-consumer-group"
+        ));
         assertThat(new String(headers.lastHeader("kafka_dlt-exception-fqcn").value()))
                 .isEqualTo("org.springframework.kafka.listener.ListenerExecutionFailedException");
         assertThat(new String(headers.lastHeader("kafka_dlt-exception-cause-fqcn").value()))

@@ -1,0 +1,25 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Confluentinc [Zookeeper + 2 Brokers + UI]" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
+    <deployment type="docker-compose.yml">
+      <settings>
+        <option name="envFilePath" value="" />
+        <option name="removeVolumesOnComposeDown" value="true" />
+        <option name="services">
+          <list>
+            <option value="zookeeper" />
+            <option value="kafka_broker_1" />
+            <option value="kafka_brokers_init" />
+            <option value="kafka-ui" />
+            <option value="kafka_broker_2" />
+          </list>
+        </option>
+        <option name="sourceFilePath" value="examples/docker/docker-compose-confluentinc.yaml" />
+        <option name="upDetach" value="false" />
+        <option name="upForceRecreate" value="true" />
+        <option name="upNoDeps" value="true" />
+        <option name="upRenewAnonVolumes" value="true" />
+      </settings>
+    </deployment>
+    <method v="2" />
+  </configuration>
+</component>

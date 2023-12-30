@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+
+  # https://github.com/provectus/kafka-ui
+  kafka-ui:
+    image: provectuslabs/kafka-ui:${KAFKA_UI_VERSION}
+    ports:
+      - 8090:8080
+    depends_on:
+      - kafka_broker_1
+      - kafka_broker_2
+    restart: always
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=broker1:29092,broker2:29093
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
