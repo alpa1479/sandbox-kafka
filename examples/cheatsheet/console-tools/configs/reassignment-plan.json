@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "partitions": [
+    {
+      "topic": "console.tools.topic",
+      "partition": 0,
+      "replicas": [
+        1
+      ],
+      "log_dirs": [
+        "any"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "partitions": [
+    {
+      "topic": "console.tools.topic",
+      "partition": 0,
+      "offset": 2
+    }
+  ],
+  "version": 1
+}
