@@ -8,12 +8,7 @@ kafka-console-producer.sh --bootstrap-server ${BOOTSTRAP_SERVER:-localhost:9092}
 --property "ignore.error=true" \
 --producer-property acks=all
 
-# scenario to create new topic and consume messages from existing topic to the new one:
-kafka-topics.sh --bootstrap-server ${BOOTSTRAP_SERVER:-localhost:9092} --topic ${MIGRATION_TOPIC_NAME:-messages-migration-test.topic} --create \
---if-not-exists \
---partitions 1 \
---replication-factor 1 \
---config retention.ms=604800000
+# scenario to consume messages from existing topic to the new one:
 kafka-console-consumer.sh --bootstrap-server ${BOOTSTRAP_SERVER:-localhost:9092} --topic ${TOPIC_NAME:-console.tools.topic} \
 --from-beginning \
 --property "print.key=true" \

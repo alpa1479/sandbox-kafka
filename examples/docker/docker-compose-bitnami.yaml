@@ -75,4 +75,6 @@ services:
       kafka-topics.sh --bootstrap-server broker1:29092 --create --if-not-exists --topic static.message.topic.failures --replication-factor 1 --partitions 1 --config retention.ms=300000
       kafka-topics.sh --bootstrap-server broker1:29092 --create --if-not-exists --topic dynamic.message.topic --replication-factor 1 --partitions 4
       kafka-topics.sh --bootstrap-server broker1:29092 --create --if-not-exists --topic dynamic.message.topic.failures --replication-factor 1 --partitions 1
+      kafka-topics.sh --bootstrap-server broker1:29092 --create --if-not-exists --topic console.tools.topic --replica-assignment 2
+      kafka-topics.sh --bootstrap-server broker1:29092 --create --if-not-exists --topic messages-migration-test.topic --replication-factor 1 --partitions 1
       "
